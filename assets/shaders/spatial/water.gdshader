@@ -13,6 +13,8 @@ global uniform vec4 foam_color : source_color;
 
 uniform float roughness : hint_range(0.0, 1.0) = 0.4;
 uniform float normal_strength : hint_range(0.0, 1.0) = 1.0; // Global normal strength
+uniform sampler2D color_ramp : source_color, repeat_disable;
+uniform vec3 sss_modifier : source_color;
 
 group_uniforms cascade_data;
 uniform vec4 map_scales[MAX_CASCADES];               // Scales for displacement/normal maps. Packed: [uv scale, displacement scale, normal scale]
@@ -82,9 +84,11 @@ void fragment() {
 		// This is dependent on the tile size as well as displacement/normal map resolution.
 		gradient += mix(texture_bicubic(normals, coords), texture(normals, coords), min(1.0, ppm*0.1)).xyw * vec3(scales.ww, 1.0);
 	}
-		
+	
+	ALBEDO = texture(color_ramp, vec2(wave_height / 10.0 + .5, 0)).rgb;
+	
 	foam_factor = smoothstep(0.0, 1.0, gradient.z*0.75) * exp(-dist*0.0075);
-	ALBEDO = mix(water_color.rgb, foam_color.rgb, foam_factor);
+	ALBEDO = mix(ALBEDO, foam_color.rgb, foam_factor);
 
 	gradient *= mix(0.015, normal_strength, exp(-dist*0.0175)); // Blend normal with terrain normal as distance increases.
 	NORMAL = (VIEW_MATRIX * vec4(normalize(vec3(-gradient.x, 1.0, -gradient.y)), 0.0)).xyz;
@@ -119,9 +123,8 @@ void light() {
 	SPECULAR_LIGHT += fresnel * microfacet_distribution * geometric_attenuation / (4.0 * dot_nv + 0.1) * ATTENUATION;
 
 	// --- DIFFUSE ---
-	const vec3 sss_modifier = vec3(0.9,1.15,0.85); // Subsurface scattering produces a 'greener' color.
-	float sss_height = 1.0*max(0.0, wave_height + 2.5) * pow(max(dot(LIGHT, -VIEW), 0.0), 4.0) * pow(0.5 - 0.5 * dot(LIGHT, NORMAL), 3.0);
+	float sss_height = 2.0*max(0.0, wave_height + 2.5) * pow(max(dot(LIGHT, -VIEW), 0.0), 4.0) * pow(0.5 - 0.5 * dot(LIGHT, NORMAL), 3.0);
 	float sss_near = 0.5*pow(dot_nv, 2.0);
-	float lambertian = 0.5*dot_nl;
+	float lambertian = 0.2*dot_nl;
 	DIFFUSE_LIGHT += mix((sss_height + sss_near) * sss_modifier / (1.0 + light_mask) + lambertian, foam_color.rgb, foam_factor) * (1.0 - fresnel) * ATTENUATION * LIGHT_COLOR;
 }

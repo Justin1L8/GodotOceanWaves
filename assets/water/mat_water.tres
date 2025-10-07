@@ -1,10 +1,19 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=4 uid="uid://byumtcccq4ew3"]
+[gd_resource type="ShaderMaterial" load_steps=4 format=4 uid="uid://byumtcccq4ew3"]
 
-[ext_resource type="Shader" path="res://assets/shaders/spatial/water.gdshader" id="1_uffek"]
+[ext_resource type="Shader" uid="uid://cjhn8nkfr4mn0" path="res://assets/shaders/spatial/water.gdshader" id="1_uffek"]
+
+[sub_resource type="Gradient" id="Gradient_srbp3"]
+offsets = PackedFloat32Array(0, 0.3322034, 0.68135595, 1)
+colors = PackedColorArray(0, 0.36078432, 0.54509807, 1, 0, 0.45490196, 0.59607846, 1, 0, 0.54509807, 0.627451, 1, 0, 0.6392157, 0.6431373, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_gj4d1"]
+gradient = SubResource("Gradient_srbp3")
 
 [resource]
 render_priority = 1
 shader = ExtResource("1_uffek")
-shader_parameter/roughness = 0.65
-shader_parameter/normal_strength = 1.0
-shader_parameter/map_scales = PackedVector4Array(0.0113636, 0.0113636, 1, 1, 0.0175439, 0.0175439, 0.75, 1, 0.0625, 0.0625, 0, 0.25)
+shader_parameter/roughness = 1.0
+shader_parameter/normal_strength = 0.5830000276925
+shader_parameter/color_ramp = SubResource("GradientTexture1D_gj4d1")
+shader_parameter/sss_modifier = Color(0.65809184, 0.8153955, 0.45238695, 1)
+shader_parameter/map_scales = PackedVector4Array(0.011363637, 0.011363637, 1, 1, 0.01754386, 0.01754386, 0.75, 1)
